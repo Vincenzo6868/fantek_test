@@ -59,7 +59,13 @@ export function ClubTable({ count = 0, rows = [], page = 0, rowsPerPage = 0 }: C
                 <Checkbox
                   checked={selectedAll}
                   indeterminate={selectedSome}
-                  onChange={(event) => (event.target.checked ? selectAll() : deselectAll())}
+                  onChange={(event) => {
+                    if (event.target.checked) {
+                      selectAll();
+                    } else {
+                      deselectAll();
+                    }
+                  }}
                 />
               </TableCell>
               <TableCell>Tên Câu Lạc Bộ</TableCell>
@@ -79,7 +85,13 @@ export function ClubTable({ count = 0, rows = [], page = 0, rowsPerPage = 0 }: C
                   <TableCell padding="checkbox">
                     <Checkbox
                       checked={isSelected}
-                      onChange={(event) => (event.target.checked ? selectOne(row.id) : deselectOne(row.id))}
+                      onChange={(event) => {
+                        if (event.target.checked) {
+                          selectOne(row.id);
+                        } else {
+                          deselectOne(row.id);
+                        }
+                      }}
                     />
                   </TableCell>
                   <TableCell>
@@ -93,9 +105,9 @@ export function ClubTable({ count = 0, rows = [], page = 0, rowsPerPage = 0 }: C
                   <TableCell>
                     <Select
                       value={status}
-                      onChange={(event) =>
-                        handleAction(row.id, event.target.value as 'accepted' | 'rejected' | 'pending')
-                      }
+                      onChange={(event) => {
+                        handleAction(row.id, event.target.value as 'accepted' | 'rejected' | 'pending');
+                      }}
                       size="small"
                       sx={{ minWidth: 130 }}
                     >
@@ -117,8 +129,12 @@ export function ClubTable({ count = 0, rows = [], page = 0, rowsPerPage = 0 }: C
         page={page}
         rowsPerPage={rowsPerPage}
         rowsPerPageOptions={[5, 10, 25]}
-        onPageChange={() => {}}
-        onRowsPerPageChange={() => {}}
+        onPageChange={() => {
+          // TODO: Implement pagination logic
+        }}
+        onRowsPerPageChange={() => {
+          // TODO: Handle rows per page change
+        }}
       />
     </Card>
   );
