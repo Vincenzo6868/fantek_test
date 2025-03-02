@@ -5,9 +5,7 @@ import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
-import Tooltip from '@mui/material/Tooltip';
 import { List as ListIcon } from '@phosphor-icons/react/dist/ssr/List';
-import { MagnifyingGlass as MagnifyingGlassIcon } from '@phosphor-icons/react/dist/ssr/MagnifyingGlass';
 
 import { usePopover } from '@/hooks/use-popover';
 
@@ -45,11 +43,11 @@ export function MainNav(): React.JSX.Element {
             >
               <ListIcon />
             </IconButton>
-            <Tooltip title="Search">
+            {/* <Tooltip title="Search">
               <IconButton>
                 <MagnifyingGlassIcon />
               </IconButton>
-            </Tooltip>
+            </Tooltip> */}
           </Stack>
           <Stack sx={{ alignItems: 'center' }} direction="row" spacing={2}>
             {/* <Tooltip title="Contacts">

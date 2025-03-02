@@ -1,8 +1,7 @@
 export const paths = {
-  home: '/',
+  home: '/dashboard/club',
   auth: { signIn: '/auth/sign-in', resetPassword: '/auth/reset-password' },
   dashboard: {
-    overview: '/dashboard',
     club: '/dashboard/club',
   },
   errors: { notFound: '/errors/not-found' },

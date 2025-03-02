@@ -6,7 +6,6 @@ import Typography from '@mui/material/Typography';
 import { Plus as PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 
 import { config } from '@/config';
-import { ClubFilters } from '@/components/dashboard/club/club-filters';
 import { ClubTable } from '@/components/dashboard/club/club-table';
 import type { Club } from '@/components/dashboard/club/club-table';
 
@@ -90,7 +89,7 @@ export default function Page(): React.JSX.Element {
           </Button>
         </div>
       </Stack>
-      <ClubFilters />
+      {/* <ClubFilters /> */}
       <ClubTable 
         count={paginatedClubs.length}
         page={page}
