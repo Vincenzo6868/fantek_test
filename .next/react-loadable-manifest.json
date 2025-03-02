@@ -1,9 +1,0 @@
-{
-  "components/core/chart.tsx -> react-apexcharts": {
-    "id": 63865,
-    "files": [
-      "static/chunks/3975359d.d48f1db2fb3cdf7b.js",
-      "static/chunks/865.d11abf40b1f3c672.js"
-    ]
-  }
-}
