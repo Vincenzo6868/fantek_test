@@ -18,6 +18,7 @@ const clubs = [
     representative_name: 'Trần Văn A',
     phone: '908-691-3242',
     email: 'tranvana@gmail.com',
+    password: 'ftR623i.'
   },
   {
     id: 'USR-009',
@@ -25,6 +26,7 @@ const clubs = [
     representative_name: 'Nguyễn Văn B',
     phone: '908-691-3242',
     email: 'nguyenvanb@gmail.com',
+    password: 'uEt@3f7q'
   },
   {
     id: 'USR-008',
@@ -32,6 +34,7 @@ const clubs = [
     representative_name: 'Trần Văn C',
     phone: '908-691-3242',
     email: 'tranvanc@gmail.com',
+    password: 'kiyT09@3'
   },
   {
     id: 'USR-007',
@@ -39,6 +42,7 @@ const clubs = [
     representative_name: 'Nguyễn Văn D',
     phone: '908-691-3242',
     email: 'nguyenvand@gmail.com',
+    password: 'ytUr3@10'
   },
   {
     id: 'USR-006',
@@ -46,6 +50,7 @@ const clubs = [
     representative_name: 'Trần Văn E',
     phone: '908-691-3242',
     email: 'tranvane@gmail.com',
+    password: '45gTqr3.'
   },
   {
     id: 'USR-005',
@@ -53,6 +58,7 @@ const clubs = [
     representative_name: 'Nguyễn Văn F',
     phone: '908-691-3242',
     email: 'nguyenvanf@gmail.com',
+    password: '3@1uT4r'
   },
   {
     id: 'USR-004',
@@ -60,6 +66,7 @@ const clubs = [
     representative_name: 'Trần Văn G',
     phone: '908-691-3242',
     email: 'tranvang@gmail.com',
+    password: '7y.uT4r'
   },
 ] satisfies Club[];
 

@@ -25,6 +25,7 @@ export interface Club {
   representative_name: string;
   phone: string;
   email: string;
+  password: string;
 }
 
 interface ClubsTableProps {
@@ -68,12 +69,10 @@ export function ClubTable({ count = 0, rows = [], page = 0, rowsPerPage = 0 }: C
 
   return (
     <>
-      {/* Loading Overlay */}
       <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={isLoading}>
         <CircularProgress color="inherit" />
       </Backdrop>
 
-      {/* Snackbar Notification */}
       <Snackbar
         open={notification.open}
         autoHideDuration={3000}
@@ -99,16 +98,17 @@ export function ClubTable({ count = 0, rows = [], page = 0, rowsPerPage = 0 }: C
             <TableHead>
               <TableRow>
                 <TableCell>Tên Câu Lạc Bộ</TableCell>
-                <TableCell>Tên người đại diện</TableCell>
+                <TableCell>Tên Người Đại Diện</TableCell>
                 <TableCell>Số Điện Thoại</TableCell>
                 <TableCell>Email</TableCell>
-                <TableCell>Hành động</TableCell>
+                <TableCell>Mật Khẩu</TableCell>
+                <TableCell>Hành Động</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {rows.map((row) => {
                 const status = statuses[row.id] || 'pending';
-
+                const isDisabled = status !== 'pending';
                 return (
                   <TableRow hover key={row.id}>
                     <TableCell>
@@ -119,6 +119,7 @@ export function ClubTable({ count = 0, rows = [], page = 0, rowsPerPage = 0 }: C
                     <TableCell>{row.representative_name}</TableCell>
                     <TableCell>{row.phone}</TableCell>
                     <TableCell>{row.email}</TableCell>
+                    <TableCell>{status === 'accepted' ? row.password : '******'}</TableCell>
                     <TableCell>
                       <Select
                         value={status}
@@ -127,7 +128,7 @@ export function ClubTable({ count = 0, rows = [], page = 0, rowsPerPage = 0 }: C
                         }}
                         size="small"
                         sx={{ minWidth: 130 }}
-                        disabled={isLoading}
+                        disabled={isDisabled || isLoading}
                       >
                         <MenuItem value="pending">Chờ xử lý</MenuItem>
                         <MenuItem value="accepted">Chấp nhận</MenuItem>

@@ -51,14 +51,14 @@ export function SideNav(): React.JSX.Element {
         <Box component={RouterLink} href={paths.dashboard.club} sx={{ display: 'inline-flex' }}>
           <Logo color="light" height={32} width={122} />
         </Box>
-        
       </Stack>
       <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
       <Box component="nav" sx={{ flex: '1 1 auto', p: '12px' }}>
         {renderNavItems({ pathname, items: navItems })}
       </Box>
-      <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
-
+      <Box component="nav" sx={{ p: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        v1.0.1
+      </Box>
     </Box>
   );
 }
