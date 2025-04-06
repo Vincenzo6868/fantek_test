@@ -1,6 +1,16 @@
 'use client';
 
+import axios from 'axios';
+
 import type { User } from '@/types/user';
+import { API_URL } from '@/lib/api-config';
+
+interface LoginResponse {
+  success: boolean;
+  token: string;
+  userId: string;
+  error?: string;
+}
 
 function generateToken(): string {
   const arr = new Uint8Array(12);
@@ -11,8 +21,6 @@ function generateToken(): string {
 const user = {
   id: 'USR-000',
   avatar: '/assets/avatar.png',
-  firstName: 'Sofia',
-  lastName: 'Rivers',
   email: 'sofia@devias.io',
 } satisfies User;
 
@@ -42,7 +50,7 @@ class AuthClient {
 
     // We do not handle the API, so we'll just generate a token and store it in localStorage.
     const token = generateToken();
-    localStorage.setItem('custom-auth-token', token);
+    localStorage.setItem('auth-token', token);
 
     return {};
   }
@@ -52,20 +60,27 @@ class AuthClient {
   }
 
   async signInWithPassword(params: SignInWithPasswordParams): Promise<{ error?: string }> {
-    const { email, password } = params;
-
-    // Make API request
-
-    // We do not handle the API, so we'll check if the credentials match with the hardcoded ones.
-    if (email !== 'admin@gmail.com' || password !== 'aA123456') {
-      return { error: 'Email hoặc mật khẩu không đúng!' };
+    try {
+      const response = await axios.post<LoginResponse>(`${API_URL}/login`, params);
+      const data = response.data;
+  
+      if (data.success) {
+        localStorage.setItem('auth-token', data.token);
+        localStorage.setItem('auth-userId', data.userId);
+      }
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        const data = err.response?.data as { error?: string } | undefined;
+        const message = data?.error ?? 'Đăng nhập thất bại';
+        return { error: message };
+      }
+  
+      return { error: 'An unexpected error occurred' };
     }
-
-    const token = generateToken();
-    localStorage.setItem('custom-auth-token', token);
-
+  
     return {};
   }
+  
 
   async resetPassword(_: ResetPasswordParams): Promise<{ error?: string }> {
     return { error: 'Password reset not implemented' };
@@ -79,7 +94,7 @@ class AuthClient {
     // Make API request
 
     // We do not handle the API, so just check if we have a token in localStorage.
-    const token = localStorage.getItem('custom-auth-token');
+    const token = localStorage.getItem('auth-token');
 
     if (!token) {
       return { data: null };
@@ -89,7 +104,8 @@ class AuthClient {
   }
 
   async signOut(): Promise<{ error?: string }> {
-    localStorage.removeItem('custom-auth-token');
+    localStorage.removeItem('auth-token');
+    localStorage.removeItem('auth-userId');
 
     return {};
   }

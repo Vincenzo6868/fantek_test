@@ -1,7 +1,7 @@
 'use client';
 
+// ClubTable.tsx
 import * as React from 'react';
-import Alert from '@mui/material/Alert';
 import Backdrop from '@mui/material/Backdrop';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -9,7 +9,6 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -19,25 +18,35 @@ import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 
+import { useGetClub, useUpdateClubStatus } from '@/hooks/use-club';
+import Notification from '@/components/notification/notification';
+
 export interface Club {
-  id: string;
-  club_name: string;
-  representative_name: string;
-  phone: string;
+  userId: string;
+  displayName: string;
+  representativeName: string;
+  phoneNumber: string;
   email: string;
+  onboarded: boolean;
+  onboardStatus: string;
   password: string;
 }
 
-interface ClubsTableProps {
-  count?: number;
-  page?: number;
-  rows?: Club[];
-  rowsPerPage?: number;
-}
+export function ClubTable(): React.JSX.Element {
+  // Fetch club data
+  const { clubs, loading } = useGetClub();
 
-export function ClubTable({ count = 0, rows = [], page = 0, rowsPerPage = 0 }: ClubsTableProps): React.JSX.Element {
+  // pagination
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+
+  // update club status
+  const { updateStatus, loading: updateLoading } = useUpdateClubStatus();
+  const paginatedClubs = applyPagination(clubs, page, rowsPerPage);
+  const rows = paginatedClubs;
+  const count = clubs.length;
+
   const [statuses, setStatuses] = React.useState<Record<string, 'accepted' | 'rejected' | 'pending'>>({});
-  const [isLoading, setIsLoading] = React.useState(false);
   const [notification, setNotification] = React.useState<{
     open: boolean;
     message: string;
@@ -48,49 +57,57 @@ export function ClubTable({ count = 0, rows = [], page = 0, rowsPerPage = 0 }: C
     severity: 'info',
   });
 
-  const handleAction = (id: string, action: 'accepted' | 'rejected' | 'pending') => {
-    setIsLoading(true);
+  // handle change club status
+  const handleAction = async (userId: string, action: 'accepted' | 'rejected' | 'pending') => {
+    try {
+      await updateStatus(userId, action);
 
-    setTimeout(() => {
       setStatuses((prev) => ({
         ...prev,
-        [id]: action,
+        [userId]: action,
       }));
 
-      setIsLoading(false);
+      const message =
+        action === 'accepted'
+          ? 'Câu lạc bộ đã được chấp nhận.'
+          : action === 'rejected'
+            ? 'Câu lạc bộ đã bị từ chối.'
+            : 'Câu lạc bộ trở về trạng thái chờ.';
 
-      let message = `Câu lạc bộ đã ${action === 'accepted' ? 'được chấp nhận' : action === 'rejected' ? 'bị từ chối' : 'trở về trạng thái chờ'}.`;
-      let severity: 'success' | 'error' | 'info' =
+      const severity: 'success' | 'error' | 'info' =
         action === 'accepted' ? 'success' : action === 'rejected' ? 'error' : 'info';
 
       setNotification({ open: true, message, severity });
-    }, 1000);
+    } catch (err: unknown) {
+      let errorMessage = 'Có lỗi xảy ra khi cập nhật trạng thái.';
+
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+
+      setNotification({
+        open: true,
+        message: errorMessage,
+        severity: 'error',
+      });
+    }
   };
 
   return (
     <>
-      <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={isLoading}>
+      <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={updateLoading || loading}>
         <CircularProgress color="inherit" />
       </Backdrop>
 
-      <Snackbar
+      {/* Use Notification component */}
+      <Notification
         open={notification.open}
-        autoHideDuration={3000}
+        message={notification.message}
+        severity={notification.severity}
         onClose={() => {
           setNotification({ ...notification, open: false });
         }}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert
-          onClose={() => {
-            setNotification({ ...notification, open: false });
-          }}
-          severity={notification.severity}
-          sx={{ width: '100%' }}
-        >
-          {notification.message}
-        </Alert>
-      </Snackbar>
+      />
 
       <Card>
         <Box sx={{ overflowX: 'auto' }}>
@@ -107,28 +124,36 @@ export function ClubTable({ count = 0, rows = [], page = 0, rowsPerPage = 0 }: C
             </TableHead>
             <TableBody>
               {rows.map((row) => {
-                const status = statuses[row.id] || 'pending';
-                const isDisabled = status !== 'pending';
+                const status = statuses[row.userId] ?? row.onboardStatus;
+                const isDisabled = row.onboardStatus !== 'pending' || status !== 'pending';
                 return (
-                  <TableRow hover key={row.id}>
+                  <TableRow hover key={row.userId}>
                     <TableCell>
                       <Stack sx={{ alignItems: 'center' }} direction="row" spacing={2}>
-                        <Typography variant="subtitle2">{row.club_name}</Typography>
+                        <Typography variant="subtitle2">{row.displayName}</Typography>
                       </Stack>
                     </TableCell>
-                    <TableCell>{row.representative_name}</TableCell>
-                    <TableCell>{row.phone}</TableCell>
+                    <TableCell>{row.representativeName}</TableCell>
+                    <TableCell>{row.phoneNumber}</TableCell>
                     <TableCell>{row.email}</TableCell>
                     <TableCell>{status === 'accepted' ? row.password : '******'}</TableCell>
                     <TableCell>
                       <Select
                         value={status}
+                        renderValue={() => {
+                          if (row.onboardStatus === 'accepted' || status === 'accepted') {
+                            return 'Đã chấp nhận';
+                          } else if (row.onboardStatus === 'rejected' || status === 'rejected') {
+                            return 'Từ chối';
+                          }
+                          return 'Chờ xử lý';
+                        }}
                         onChange={(event) => {
-                          handleAction(row.id, event.target.value as 'accepted' | 'rejected' | 'pending');
+                          void handleAction(row.userId, event.target.value as 'accepted' | 'rejected' | 'pending');
                         }}
                         size="small"
-                        sx={{ minWidth: 130 }}
-                        disabled={isDisabled || isLoading}
+                        sx={{ minWidth: 150 }}
+                        disabled={isDisabled || updateLoading}
                       >
                         <MenuItem value="pending">Chờ xử lý</MenuItem>
                         <MenuItem value="accepted">Chấp nhận</MenuItem>
@@ -147,15 +172,20 @@ export function ClubTable({ count = 0, rows = [], page = 0, rowsPerPage = 0 }: C
           count={count}
           page={page}
           rowsPerPage={rowsPerPage}
-          rowsPerPageOptions={[5, 10, 25]}
-          onPageChange={() => {
-            // TODO: Implement pagination logic
+          rowsPerPageOptions={[10, 20, 50, 100]}
+          onPageChange={(_, newPage) => {
+            setPage(newPage);
           }}
-          onRowsPerPageChange={() => {
-            // TODO: Handle rows per page change
+          onRowsPerPageChange={(event) => {
+            setRowsPerPage(parseInt(event.target.value, 10));
+            setPage(0); // reset lại page khi thay đổi số dòng mỗi trang
           }}
         />
       </Card>
     </>
   );
+}
+
+function applyPagination(rows: Club[], page: number, rowsPerPage: number): Club[] {
+  return rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 }
