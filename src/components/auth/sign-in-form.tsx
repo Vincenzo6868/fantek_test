@@ -46,8 +46,6 @@ export function SignInForm(): React.JSX.Element {
     formState: { errors },
   } = useForm<Values>({ resolver: zodResolver(schema) });
 
-  console.log('test');
-
   const onSubmit = React.useCallback(
     async (values: Values): Promise<void> => {
       setIsPending(true);
