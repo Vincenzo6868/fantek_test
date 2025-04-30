@@ -28,6 +28,11 @@ export const useGetClub = () => {
   // Get token from localStorage
   const token = localStorage.getItem('auth-token');
 
+  // if token is not found, redirect to login page
+  if (!token) {
+    window.location.href = '/auth/sign-in';
+  }
+
   useEffect(() => {
     const fetchClubs = async () => {
       try {
