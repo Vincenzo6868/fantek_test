@@ -112,7 +112,7 @@ export function KYCTable(): React.JSX.Element {
               </TableRow>
             </TableHead>
             <TableBody>
-              {paginatedKYCs.map((row, index) => {
+              {paginatedKYCs.map((row) => {
                 const status = statuses[row._id] ? statuses[row._id] : row.status;
 
                 return (

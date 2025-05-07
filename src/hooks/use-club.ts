@@ -9,6 +9,9 @@ import type { Club } from '@/components/dashboard/club/club-table';
 interface ClubResponse {
   success: boolean;
   data: Club[];
+  total: number;
+  page: number;
+  limit: number;
 }
 
 interface UpdateStatusResponse {
@@ -25,18 +28,35 @@ export const useGetClub = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Get token from localStorage
-  const token = localStorage.getItem('auth-token');
-
-  // if token is not found, redirect to login page
-  if (!token) {
-    window.location.href = '/auth/sign-in';
-  }
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
 
   useEffect(() => {
+    // Get token from localStorage
+    const token = localStorage.getItem('auth-token');
+
+    // if token is not found, redirect to login page
+    if (!token) {
+      window.location.href = '/auth/sign-in';
+      return;
+    }
+
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+
+    const pageAlreadyFetched = clubs.slice(startIndex, endIndex).length === limit;
+
+    if (pageAlreadyFetched) {
+      setLoading(false);
+      return;
+    }
+
     const fetchClubs = async () => {
+      setLoading(true);
+
       try {
-        const response = await axios.get<ClubResponse>(`${API_URL}/clubs?page=1&limit=5`, {
+        const response = await axios.get<ClubResponse>(`${API_URL}/admin/clubs?page=${page}&limit=${limit}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             Accept: 'application/json',
@@ -44,12 +64,23 @@ export const useGetClub = () => {
         });
 
         if (response.data.success) {
-          setClubs(response.data.data);
+          setTotal(response.data.total);
+          setClubs((prev) => {
+            const newItems = response.data.data.filter((item) => !prev.find((existing) => existing.userId === item.userId));
+            return [...prev, ...newItems];
+          });
         } else {
           setError('Failed to fetch clubs');
         }
       } catch (err: unknown) {
-        if (err instanceof Error) {
+        if (axios.isAxiosError(err)) {
+          if (err.response?.status === 401) {
+            // Redirect on unauthorized
+            localStorage.removeItem('auth-token');
+            localStorage.removeItem('auth-userId');
+            window.location.href = '/auth/sign-in';
+            return;
+          }
           setError(err.message);
         } else {
           setError('Unknown error');
@@ -59,12 +90,19 @@ export const useGetClub = () => {
       }
     };
 
-    if (token) {
-      void fetchClubs();
-    }
-  }, [token]);
+    void fetchClubs();
+  }, [page, limit]);
 
-  return { clubs, loading, error };
+  return {
+    clubs,
+    loading,
+    error,
+    total,
+    page,
+    limit,
+    setPage,
+    setLimit,
+  };
 };
 
 export const useUpdateClubStatus = () => {
@@ -81,7 +119,7 @@ export const useUpdateClubStatus = () => {
       if (!token) throw new Error('Authentication token not found');
 
       const response = await axios.patch<UpdateStatusResponse>(
-        `${API_URL}/clubs/${userId}/status`,
+        `${API_URL}/admin/clubs/${userId}/status`,
         { status },
         {
           headers: {

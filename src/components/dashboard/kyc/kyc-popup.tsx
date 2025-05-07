@@ -39,7 +39,7 @@ export default function KYCDialog({
   setStatuses,
   statuses
 }: KYCDialogProps): React.JSX.Element {
-  const {updateStatus, loading, data} = useUpdateKYCStatus();
+  const {updateStatus, loading} = useUpdateKYCStatus();
 
   // handle change kyc status
   const handleAction = async (id: string, action: 'approved' | 'rejected' | 'pending') => {
@@ -131,7 +131,7 @@ export default function KYCDialog({
                   label="Từ Chối"
                   color="error"
                   onClick={() => {
-                    handleAction(
+                    void handleAction(
                       kyc._id,
                       'rejected'
                     );
@@ -141,7 +141,7 @@ export default function KYCDialog({
                   label="Phê Duyệt"
                   color="primary"
                   onClick={() => {
-                    handleAction(
+                    void handleAction(
                       kyc._id,
                       'approved'
                     );
@@ -202,9 +202,9 @@ function ImageBox({ title, src }: { title: string; src: string }): React.JSX.Ele
   const [loaded, setLoaded] = React.useState(false);
   const [open, setOpen] = React.useState(false);
 
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-
+  const handleOpen = () => { setOpen(true); };
+  const handleClose = () => { setOpen(false); };
+  
   return (
     <Box>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
@@ -228,7 +228,7 @@ function ImageBox({ title, src }: { title: string; src: string }): React.JSX.Ele
           component="img"
           src={src}
           alt={title}
-          onLoad={() => setLoaded(true)}
+          onLoad={() => {setLoaded(true)}}
           sx={{
             position: 'absolute',
             top: 0,

@@ -17,33 +17,36 @@ interface UpdateStatusResponse {
 
 export const useGetKYCList = () => {
   const [allKYCItems, setAllKYCItems] = useState<KYCItem[]>([]);
-  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
 
   useEffect(() => {
+    // Get token from localStorage
     const token = localStorage.getItem('auth-token');
+
+    // if token is not found, redirect to login page
     if (!token) {
       window.location.href = '/auth/sign-in';
       return;
     }
-  
+
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
-  
+
     const pageAlreadyFetched = allKYCItems.slice(startIndex, endIndex).length === limit;
-  
+
     if (pageAlreadyFetched) {
       setLoading(false);
       return;
     }
-  
+
     const fetchKYCList = async () => {
       setLoading(true);
-  
+
       try {
         const res = await axios.get<KYCResponse>(`${API_URL}/kyc/admin/submissions?page=${page}&limit=${limit}`, {
           headers: {
@@ -51,14 +54,11 @@ export const useGetKYCList = () => {
             Accept: 'application/json',
           },
         });
-  
+
         if (res.data.success) {
           setTotal(res.data.total);
-  
           setAllKYCItems((prev) => {
-            const newItems = res.data.data.filter(
-              (item) => !prev.find((existing) => existing._id === item._id)
-            );
+            const newItems = res.data.data.filter((item) => !prev.find((existing) => existing._id === item._id));
             return [...prev, ...newItems];
           });
         } else {
@@ -81,10 +81,9 @@ export const useGetKYCList = () => {
         setLoading(false);
       }
     };
-  
+
     void fetchKYCList();
   }, [page, limit]);
-  
 
   return {
     kycItems: allKYCItems,
