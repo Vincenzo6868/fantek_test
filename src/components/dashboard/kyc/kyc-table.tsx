@@ -15,155 +15,50 @@ import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 
+import { useGetKYCList } from '@/hooks/use-kyc';
 import Notification from '@/components/notification/notification';
 import KYCDialog from './kyc-popup';
 
-type KYCStatus = 'approved' | 'pending' | 'rejected';
-
-export interface KYC {
-  userId: string;
+export interface DocInfo {
   name: string;
-  dateOfBirth: string;
-  idNumber: string;
-  issueDate: string;
-  cardType: string;
-  frontImageUrl: string;
-  backImageUrl: string;
-  status: KYCStatus;
+  dob: string;
+  idNo: string;
+  issue: string;
+  expiry: string;
+}
+
+export interface Image {
+  front: string;
+  back: string;
+}
+
+export interface KYCItem {
+  _id: string;
+  user: string;
+  type: string;
+  docInfo: DocInfo;
+  s3Keys: string[];
+  status: string;
+  reason: string;
+  createdAt: string;
+  updatedAt: string;
+  image: Image;
+}
+
+export interface KYCResponse {
+  data: KYCItem[];
+  page: number;
+  limit: number;
+  total: number;
+  success: boolean;
 }
 
 export function KYCTable(): React.JSX.Element {
-  // dummy data
-  const initialData: KYC[] = [
-    {
-      userId: 'KYC123456',
-      name: 'Nguyễn Văn A',
-      dateOfBirth: '1990-05-12',
-      idNumber: '123456789',
-      issueDate: '2015-08-01',
-      cardType: 'CMND',
-      frontImageUrl: 'https://placehold.co/600x400',
-      backImageUrl: 'https://placehold.co/600x400',
-      status: 'approved',
-    },
-    {
-      userId: 'KYC789012',
-      name: 'Trần Thị B',
-      dateOfBirth: '1992-11-23',
-      idNumber: '987654321',
-      issueDate: '2018-04-17',
-      cardType: 'CCCD',
-      frontImageUrl: 'https://placehold.co/600x400',
-      backImageUrl: 'https://placehold.co/600x400',
-      status: 'pending',
-    },
-    {
-      userId: 'KYC345678',
-      name: 'Lê Văn C',
-      dateOfBirth: '1985-02-28',
-      idNumber: '456789123',
-      issueDate: '2012-12-12',
-      cardType: 'Passport',
-      frontImageUrl: 'https://placehold.co/600x400',
-      backImageUrl: 'https://placehold.co/600x400',
-      status: 'rejected',
-    },
-    {
-      userId: 'KYC901234',
-      name: 'Phạm Thị D',
-      dateOfBirth: '1988-07-14',
-      idNumber: '111222333',
-      issueDate: '2016-03-22',
-      cardType: 'CCCD',
-      frontImageUrl: 'https://placehold.co/600x400',
-      backImageUrl: 'https://placehold.co/600x400',
-      status: 'pending',
-    },
-    {
-      userId: 'KYC567890',
-      name: 'Đặng Văn E',
-      dateOfBirth: '1995-01-30',
-      idNumber: '999888777',
-      issueDate: '2019-05-10',
-      cardType: 'CMND',
-      frontImageUrl: 'https://placehold.co/600x400',
-      backImageUrl: 'https://placehold.co/600x400',
-      status: 'pending',
-    },
-    {
-      userId: 'KYC112233',
-      name: 'Ngô Thị F',
-      dateOfBirth: '1991-09-20',
-      idNumber: '444555666',
-      issueDate: '2014-09-05',
-      cardType: 'Passport',
-      frontImageUrl: 'https://placehold.co/600x400',
-      backImageUrl: 'https://placehold.co/600x400',
-      status: 'pending',
-    },
-    {
-      userId: 'KYC445566',
-      name: 'Lý Văn G',
-      dateOfBirth: '1983-06-18',
-      idNumber: '777666555',
-      issueDate: '2013-11-25',
-      cardType: 'CCCD',
-      frontImageUrl: 'https://placehold.co/600x400',
-      backImageUrl: 'https://placehold.co/600x400',
-      status: 'pending',
-    },
-    {
-      userId: 'KYC778899',
-      name: 'Trịnh Thị H',
-      dateOfBirth: '1996-02-11',
-      idNumber: '888999000',
-      issueDate: '2020-01-15',
-      cardType: 'CMND',
-      frontImageUrl: 'https://placehold.co/600x400',
-      backImageUrl: 'https://placehold.co/600x400',
-      status: 'pending',
-    },
-    {
-      userId: 'KYC334455',
-      name: 'Bùi Văn I',
-      dateOfBirth: '1980-03-03',
-      idNumber: '321654987',
-      issueDate: '2010-07-20',
-      cardType: 'Passport',
-      frontImageUrl: 'https://placehold.co/600x400',
-      backImageUrl: 'https://placehold.co/600x400',
-      status: 'rejected',
-    },
-    {
-      userId: 'KYC667788',
-      name: 'Vũ Thị J',
-      dateOfBirth: '1993-12-25',
-      idNumber: '654321987',
-      issueDate: '2017-06-18',
-      cardType: 'CCCD',
-      frontImageUrl: 'https://placehold.co/600x400',
-      backImageUrl: 'https://placehold.co/600x400',
-      status: 'approved',
-    },
-  ];
-  
-  const [kycList, setKycList] = React.useState<KYC[]>(initialData);
+  const { kycItems, loading, page, limit, total, setPage, setLimit } = useGetKYCList();
 
-  const [page, setPage] = React.useState<number>(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState<number>(10);
-  const paginatedKYCs = applyPagination(kycList, page, rowsPerPage);
+  const [statuses, setStatuses] = React.useState<Record<string, 'approved' | 'rejected' | 'pending'>>({});
+  const paginatedKYCs = applyPagination(kycItems, page, limit);
 
-  const [loading, setLoading] = React.useState<boolean>(true);
-  React.useEffect((): (() => void) => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-  
-    return (): void => {
-      clearTimeout(timer);
-    };
-  }, []);
-  
   const [notification, setNotification] = React.useState<{
     open: boolean;
     message: string;
@@ -175,10 +70,10 @@ export function KYCTable(): React.JSX.Element {
   });
 
   const [dialogOpen, setDialogOpen] = React.useState<boolean>(false);
-  const [selectedKYC, setSelectedKYC] = React.useState<KYC | null>(null);
+  const [selectedKYC, setSelectedKYC] = React.useState<KYCItem | null>(null);
 
-  function renderStatus(status: KYC['status']): React.ReactNode {
-    const statusMap: Record<KYC['status'], { label: string; color: string }> = {
+  function renderStatus(status: KYCItem['status']): React.ReactNode {
+    const statusMap: Record<KYCItem['status'], { label: string; color: string }> = {
       approved: { label: 'Đã Duyệt', color: 'green' },
       pending: { label: 'Chờ Duyệt', color: 'orange' },
       rejected: { label: 'Đã Từ Chối', color: 'red' },
@@ -186,11 +81,7 @@ export function KYCTable(): React.JSX.Element {
 
     const { label, color } = statusMap[status];
 
-    return (
-      <span style={{ color, fontWeight: 600, textTransform: 'capitalize' }}>
-        {label}
-      </span>
-    );
+    return <span style={{ color, fontWeight: 600, textTransform: 'capitalize' }}>{label}</span>;
   }
 
   return (
@@ -213,60 +104,64 @@ export function KYCTable(): React.JSX.Element {
           <Table sx={{ minWidth: 800 }}>
             <TableHead>
               <TableRow>
-                <TableCell>ID</TableCell>
                 <TableCell>Tên</TableCell>
                 <TableCell>Ngày Sinh</TableCell>
+                <TableCell>Loại Giấy Tờ</TableCell>
                 <TableCell>Trạng Thái</TableCell>
                 <TableCell>Hành Động</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {paginatedKYCs.map((row, index) => (
-                <TableRow hover key={row.userId}>
-                  <TableCell>{index + 1 + page * rowsPerPage}</TableCell>
-                  <TableCell>
-                    <Stack direction="row" spacing={2} alignItems="center">
-                      <Typography variant="subtitle2">{row.name}</Typography>
-                    </Stack>
-                  </TableCell>
-                  <TableCell>{row.dateOfBirth}</TableCell>
-                  <TableCell>{renderStatus(row.status)}</TableCell>
-                  <TableCell>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedKYC(row);
-                        setDialogOpen(true);
-                      }}
-                      style={{
-                        color: '#1976d2',
-                        cursor: 'pointer',
-                        background: 'none',
-                        border: 'none',
-                        fontWeight: 600,
-                      }}
-                    >
-                      Chỉnh Sửa
-                    </button>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {paginatedKYCs.map((row, index) => {
+                const status = statuses[row._id] ? statuses[row._id] : row.status;
+
+                return (
+                  <TableRow hover key={row._id}>
+                    <TableCell>
+                      <Stack direction="row" spacing={2} alignItems="center">
+                        <Typography variant="subtitle2">{row.docInfo.name}</Typography>
+                      </Stack>
+                    </TableCell>
+                    <TableCell>{row.docInfo.dob}</TableCell>
+                    <TableCell sx={{ textTransform: 'uppercase' }}>{row.type}</TableCell>
+                    <TableCell>{renderStatus(status)}</TableCell>
+                    <TableCell>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedKYC(row);
+                          setDialogOpen(true);
+                        }}
+                        style={{
+                          color: '#1976d2',
+                          cursor: 'pointer',
+                          background: 'none',
+                          border: 'none',
+                          fontWeight: 600,
+                        }}
+                      >
+                        Chỉnh Sửa
+                      </button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </Box>
         <Divider />
         <TablePagination
           component="div"
-          count={kycList.length}
-          page={page}
-          rowsPerPage={rowsPerPage}
+          count={total}
+          page={page - 1}
+          rowsPerPage={limit}
           rowsPerPageOptions={[10, 20, 50, 100]}
           onPageChange={(_, newPage): void => {
-            setPage(newPage);
+            setPage(newPage + 1);
           }}
           onRowsPerPageChange={(e): void => {
-            setRowsPerPage(parseInt(e.target.value, 10));
-            setPage(0);
+            setLimit(parseInt(e.target.value, 10));
+            setPage(1);
           }}
         />
       </Card>
@@ -279,12 +174,13 @@ export function KYCTable(): React.JSX.Element {
         kyc={selectedKYC}
         setNotification={setNotification}
         renderStatus={renderStatus}
-        setKycList={setKycList}
+        setStatuses={setStatuses}
+        statuses={statuses}
       />
     </>
   );
 }
 
-function applyPagination(rows: KYC[], page: number, rowsPerPage: number): KYC[] {
-  return rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+function applyPagination(rows: KYCItem[], page: number, limit: number): KYCItem[] {
+  return rows.slice((page - 1) * limit, page * limit);
 }

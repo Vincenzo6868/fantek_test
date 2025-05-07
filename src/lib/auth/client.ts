@@ -61,7 +61,7 @@ class AuthClient {
 
   async signInWithPassword(params: SignInWithPasswordParams): Promise<{ error?: string }> {
     try {
-      const response = await axios.post<LoginResponse>(`${API_URL}/login`, params);
+      const response = await axios.post<LoginResponse>(`${API_URL}/admin/login`, params);
       const data = response.data;
   
       if (data.success) {
