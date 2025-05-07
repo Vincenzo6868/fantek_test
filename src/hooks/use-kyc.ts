@@ -4,15 +4,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 
 import { API_URL } from '@/lib/api-config';
-import type { Club } from '@/components/dashboard/club/club-table';
-
-interface ClubResponse {
-  success: boolean;
-  data: Club[];
-  total: number;
-  page: number;
-  limit: number;
-}
+import type { KYCItem, KYCResponse } from '@/components/dashboard/kyc/kyc-table';
 
 interface UpdateStatusResponse {
   success: boolean;
@@ -23,9 +15,9 @@ interface UpdateStatusResponse {
   };
 }
 
-export const useGetClub = () => {
-  const [clubs, setClubs] = useState<Club[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+export const useGetKYCList = () => {
+  const [allKYCItems, setAllKYCItems] = useState<KYCItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [total, setTotal] = useState(0);
@@ -45,32 +37,32 @@ export const useGetClub = () => {
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
 
-    const pageAlreadyFetched = clubs.slice(startIndex, endIndex).length === limit;
+    const pageAlreadyFetched = allKYCItems.slice(startIndex, endIndex).length === limit;
 
     if (pageAlreadyFetched) {
       setLoading(false);
       return;
     }
 
-    const fetchClubs = async () => {
+    const fetchKYCList = async () => {
       setLoading(true);
 
       try {
-        const response = await axios.get<ClubResponse>(`${API_URL}/admin/clubs?page=${page}&limit=${limit}`, {
+        const res = await axios.get<KYCResponse>(`${API_URL}/kyc/admin/submissions?page=${page}&limit=${limit}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             Accept: 'application/json',
           },
         });
 
-        if (response.data.success) {
-          setTotal(response.data.total);
-          setClubs((prev) => {
-            const newItems = response.data.data.filter((item) => !prev.find((existing) => existing.userId === item.userId));
+        if (res.data.success) {
+          setTotal(res.data.total);
+          setAllKYCItems((prev) => {
+            const newItems = res.data.data.filter((item) => !prev.find((existing) => existing._id === item._id));
             return [...prev, ...newItems];
           });
         } else {
-          setError('Failed to fetch clubs');
+          setError('Failed to fetch data');
         }
       } catch (err: unknown) {
         if (axios.isAxiosError(err)) {
@@ -90,27 +82,27 @@ export const useGetClub = () => {
       }
     };
 
-    void fetchClubs();
+    void fetchKYCList();
   }, [page, limit]);
 
   return {
-    clubs,
-    loading,
-    error,
-    total,
+    kycItems: allKYCItems,
     page,
     limit,
+    total,
+    loading,
+    error,
     setPage,
     setLimit,
   };
 };
 
-export const useUpdateClubStatus = () => {
+export const useUpdateKYCStatus = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<UpdateStatusResponse | null>(null);
 
-  const updateStatus = async (userId: string, status: 'pending' | 'accepted' | 'rejected') => {
+  const updateStatus = async (id: string, status: 'pending' | 'approved' | 'rejected') => {
     setLoading(true);
     setError(null);
 
@@ -119,7 +111,7 @@ export const useUpdateClubStatus = () => {
       if (!token) throw new Error('Authentication token not found');
 
       const response = await axios.patch<UpdateStatusResponse>(
-        `${API_URL}/admin/clubs/${userId}/status`,
+        `${API_URL}/kyc/admin/submissions/${id}`,
         { status },
         {
           headers: {

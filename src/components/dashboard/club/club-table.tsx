@@ -34,17 +34,12 @@ export interface Club {
 
 export function ClubTable(): React.JSX.Element {
   // Fetch club data
-  const { clubs, loading } = useGetClub();
-
-  // pagination
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const { clubs, loading, page, limit, total, setPage, setLimit } = useGetClub();
 
   // update club status
   const { updateStatus, loading: updateLoading } = useUpdateClubStatus();
-  const paginatedClubs = applyPagination(clubs, page, rowsPerPage);
+  const paginatedClubs = applyPagination(clubs, page, limit);
   const rows = paginatedClubs;
-  const count = clubs.length;
 
   const [statuses, setStatuses] = React.useState<Record<string, 'accepted' | 'rejected' | 'pending'>>({});
   const [notification, setNotification] = React.useState<{
@@ -169,16 +164,16 @@ export function ClubTable(): React.JSX.Element {
         <Divider />
         <TablePagination
           component="div"
-          count={count}
-          page={page}
-          rowsPerPage={rowsPerPage}
+          count={total}
+          page={page - 1}
+          rowsPerPage={limit}
           rowsPerPageOptions={[10, 20, 50, 100]}
-          onPageChange={(_, newPage) => {
-            setPage(newPage);
+          onPageChange={(_, newPage): void => {
+            setPage(newPage + 1);
           }}
-          onRowsPerPageChange={(event) => {
-            setRowsPerPage(parseInt(event.target.value, 10));
-            setPage(0); // reset lại page khi thay đổi số dòng mỗi trang
+          onRowsPerPageChange={(e): void => {
+            setLimit(parseInt(e.target.value, 10));
+            setPage(1);
           }}
         />
       </Card>
@@ -186,6 +181,6 @@ export function ClubTable(): React.JSX.Element {
   );
 }
 
-function applyPagination(rows: Club[], page: number, rowsPerPage: number): Club[] {
-  return rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+function applyPagination(rows: Club[], page: number, limit: number): Club[] {
+  return rows.slice((page - 1) * limit, page * limit);
 }
