@@ -5,7 +5,7 @@ import { PlugsConnected as PlugsConnectedIcon } from '@phosphor-icons/react/dist
 import { User as UserIcon } from '@phosphor-icons/react/dist/ssr/User';
 import { Users as UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
 import { XSquare } from '@phosphor-icons/react/dist/ssr/XSquare';
-import { Fingerprint } from '@phosphor-icons/react/dist/ssr/Fingerprint';
+import { HandWithdraw, Fingerprint } from '@phosphor-icons/react';
 
 export const navIcons = {
   'chart-pie': ChartPieIcon,
@@ -15,4 +15,5 @@ export const navIcons = {
   user: UserIcon,
   users: UsersIcon,
   fingerprint: Fingerprint,
+  HandWithdraw: HandWithdraw,
 } as Record<string, Icon>;
