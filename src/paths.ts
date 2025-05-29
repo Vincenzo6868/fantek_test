@@ -4,6 +4,7 @@ export const paths = {
   dashboard: {
     club: '/dashboard/club',
     kyc: '/dashboard/kyc',
+    withdraw: '/dashboard/withdraw',
   },
   errors: { notFound: '/errors/not-found' },
 } as const;

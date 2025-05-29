@@ -5,6 +5,7 @@ export const navItems = [
   // { key: 'overview', title: 'Trang Chủ', href: paths.dashboard.overview, icon: 'chart-pie' },
   { key: 'club', title: 'Quản Lý Câu Lạc Bộ', href: paths.dashboard.club, icon: 'users' },
   { key: 'kyc', title: 'Quản Lý Danh Sách KYC', href: paths.dashboard.kyc, icon: 'fingerprint' },
+  { key: 'withdraw', title: 'Quản Lý Rút Tiền', href: paths.dashboard.withdraw, icon: 'HandWithdraw' },
   // { key: 'integrations', title: 'Integrations', href: paths.dashboard.integrations, icon: 'plugs-connected' },
   // { key: 'settings', title: 'Settings', href: paths.dashboard.settings, icon: 'gear-six' },
   // { key: 'account', title: 'Account', href: paths.dashboard.account, icon: 'user' },
