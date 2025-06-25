@@ -16,7 +16,7 @@ import {
   Typography,
 } from '@mui/material';
 
-// import { useUpdateKYCStatus } from '@/hooks/use-kyc';
+import { useApproveWithdraw, useRejectWithdraw } from '@/hooks/use-withdraw';
 
 import type { WithdrawItem } from './withdraw-table';
 
@@ -26,8 +26,8 @@ interface WithdrawDialogProps {
   withdraw: WithdrawItem | null;
   setNotification: (notification: { open: boolean; message: string; severity: 'success' | 'error' | 'info' }) => void;
   renderStatus: (status: WithdrawItem['status']) => React.ReactNode;
-  setStatuses: React.Dispatch<React.SetStateAction<Record<string, 'approved' | 'rejected' | 'pending'>>>;
-  statuses: Record<string, 'approved' | 'rejected' | 'pending'>;
+  setStatuses: React.Dispatch<React.SetStateAction<Record<string, 'transferred' | 'rejected' | 'pending'>>>;
+  statuses: Record<string, 'transferred' | 'rejected' | 'pending'>;
 }
 
 export default function WithdrawDialog({
@@ -39,7 +39,8 @@ export default function WithdrawDialog({
   setStatuses,
   statuses,
 }: WithdrawDialogProps): React.JSX.Element {
-  // const {updateStatus, loading} = useUpdateKYCStatus();
+  const { approveWithdraw, loading: approveLoading } = useApproveWithdraw();
+  const { rejectWithdraw, loading: rejectLoading } = useRejectWithdraw();
 
   // state to manage upload images
   const [uploadedImages, setUploadedImages] = React.useState<Record<string, string>>({});
@@ -48,13 +49,25 @@ export default function WithdrawDialog({
   // if withdraw is null, return empty dialog
   if (!withdraw) return <></>;
 
-  const transactionId = withdraw.transactionId;
-  const uploadedImage = uploadedImages[transactionId];
+  const withdrawId = withdraw.withdrawId;
+  const uploadedImage = uploadedImages[withdraw._id];
 
   // handle change withdraw status
-  const handleUpdateStatus = async (id: string, action: 'approved' | 'rejected') => {
+  const handleUpdateStatus = async (id: string, action: 'transferred' | 'rejected') => {
     try {
-      // await updateStatus(id, action);
+      if (action === 'transferred') {
+        if (!uploadedImage) {
+          setNotification({
+            open: true,
+            message: 'Vui lòng tải lên ảnh chuyển khoản trước khi thanh toán.',
+            severity: 'error',
+          });
+          return;
+        }
+        await approveWithdraw(id, uploadedImage);
+      } else {
+        await rejectWithdraw(id);
+      }
 
       setStatuses((prev) => ({
         ...prev,
@@ -62,14 +75,14 @@ export default function WithdrawDialog({
       }));
 
       const message =
-        action === 'approved'
+        action === 'transferred'
           ? 'Yêu cầu đã được thanh toán.'
           : action === 'rejected'
             ? 'Yêu cầu bị từ chối.'
             : 'Yêu cầu trở về trạng thái chờ.';
 
       const severity: 'success' | 'error' | 'info' =
-        action === 'approved' ? 'success' : action === 'rejected' ? 'error' : 'info';
+        action === 'transferred' ? 'success' : action === 'rejected' ? 'error' : 'info';
 
       setNotification({ open: true, message, severity });
 
@@ -90,12 +103,13 @@ export default function WithdrawDialog({
     }
   };
 
-  const status = statuses[transactionId || ''] || withdraw?.status;
+  const status = statuses[withdraw._id || ''] || withdraw?.status;
+  const loading = approveLoading || rejectLoading;
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle sx={{ fontWeight: 600, fontSize: '1.25rem' }}>
-        Yêu Cầu Rút Tiền: #{transactionId}
+        Yêu Cầu Rút Tiền: #{withdrawId}
         <IconButton
           aria-label="close"
           onClick={onClose}
@@ -116,10 +130,12 @@ export default function WithdrawDialog({
             <Grid container spacing={6}>
               <Grid item xs={12} md={6}>
                 <Box display="flex" flexDirection="column" gap={1}>
-                  <InfoRow label="Mã Giao Dịch" value={transactionId} />
-                  <InfoRow label="ID Người Dùng" value={withdraw.userId} />
-                  <InfoRow label="Số Tiền" value={withdraw.amount} />
-                  <InfoRow label="Phí" value={withdraw.fee} />
+                  <InfoRow label="Mã Rút Tiền" value={withdrawId} />
+                  <InfoRow label="Ngân Hàng" value={withdraw.bankName} />
+                  <InfoRow label="Số Tài Khoản" value={withdraw.accountNumber} />
+                  <InfoRow label="Tên Chủ Tài Khoản" value={withdraw.accountName} />
+                  <InfoRow label="Số Tiền" value={`${withdraw.amount.toLocaleString('vi-VN')} VND`} />
+                  <InfoRow label="Ghi Chú" value={withdraw.note || 'Không có ghi chú'} />
                   <InfoRow label="Trạng thái" value={renderStatus(status)} />
                 </Box>
               </Grid>
@@ -175,10 +191,10 @@ export default function WithdrawDialog({
                               e.stopPropagation();
 
                               setUploadedImages((prev) => {
-                                const { [transactionId]: _, ...rest } = prev;
+                                const { [withdraw._id]: _, ...rest } = prev;
                                 return rest;
                               });
-                              
+
                               if (inputRef.current) inputRef.current.value = '';
                             }}
                             sx={{
@@ -203,7 +219,7 @@ export default function WithdrawDialog({
                       )}
                     </Box>
                   )}
-                  {(status === 'approved' || status === 'rejected') && (
+                  {(status === 'transferred' || status === 'rejected') && (
                     <WithdrawImage withdraw={withdraw} uploadedImage={uploadedImage} />
                   )}
 
@@ -219,7 +235,7 @@ export default function WithdrawDialog({
                         reader.onloadend = () => {
                           setUploadedImages((prev) => ({
                             ...prev,
-                            [transactionId]: reader.result as string,
+                            [withdraw._id]: reader.result as string,
                           }));
                         };
                         reader.readAsDataURL(file);
@@ -236,7 +252,7 @@ export default function WithdrawDialog({
                   label="Từ Chối"
                   color="error"
                   onClick={() => {
-                    void handleUpdateStatus(transactionId, 'rejected');
+                    void handleUpdateStatus(withdraw._id, 'rejected');
                   }}
                 />
                 <ActionButton
@@ -244,7 +260,7 @@ export default function WithdrawDialog({
                   disabled={!uploadedImage}
                   color="primary"
                   onClick={() => {
-                    void handleUpdateStatus(transactionId, 'approved');
+                    void handleUpdateStatus(withdraw._id, 'transferred');
                   }}
                 />
               </Box>
@@ -253,7 +269,7 @@ export default function WithdrawDialog({
         ) : null}
       </DialogContent>
 
-      <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={false}>
+      <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={loading}>
         <CircularProgress color="inherit" />
       </Backdrop>
     </Dialog>
