@@ -18,6 +18,7 @@ interface WithdrawItem {
   accountNumber: string;
   accountName: string;
   amount: number;
+  auditUrl: string;
   note: string;
   image: string;
   status: 'pending' | 'transferred' | 'rejected';

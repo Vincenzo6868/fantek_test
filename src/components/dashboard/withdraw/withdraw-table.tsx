@@ -35,6 +35,7 @@ export interface WithdrawItem {
   accountName: string;
   amount: number;
   note: string;
+  auditUrl: string;
   image: string;
   status: 'pending' | 'transferred' | 'rejected';
   txnHash: string;
