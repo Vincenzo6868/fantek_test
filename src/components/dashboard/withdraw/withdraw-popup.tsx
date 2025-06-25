@@ -324,7 +324,7 @@ function InfoRow({
 
 function WithdrawImage({ withdraw, uploadedImage }: { withdraw: WithdrawItem; uploadedImage?: string }) {
   const [open, setOpen] = React.useState(false);
-  const imageSrc = withdraw.image || uploadedImage;
+  const imageSrc = withdraw.auditUrl || uploadedImage;
 
   const handleOpen = (): void => {
     if (imageSrc) setOpen(true);
