@@ -42,8 +42,9 @@ export default function WithdrawDialog({
   const { approveWithdraw, loading: approveLoading } = useApproveWithdraw();
   const { rejectWithdraw, loading: rejectLoading } = useRejectWithdraw();
 
-  // state to manage upload images
+  // state to manage upload images and files
   const [uploadedImages, setUploadedImages] = React.useState<Record<string, string>>({});
+  const [uploadedFiles, setUploadedFiles] = React.useState<Record<string, File>>({});
   const inputRef = React.useRef<HTMLInputElement | null>(null);
 
   // if withdraw is null, return empty dialog
@@ -51,12 +52,13 @@ export default function WithdrawDialog({
 
   const withdrawId = withdraw.withdrawId;
   const uploadedImage = uploadedImages[withdraw._id];
+  const uploadedFile = uploadedFiles[withdraw._id];
 
   // handle change withdraw status
   const handleUpdateStatus = async (id: string, action: 'transferred' | 'rejected') => {
     try {
       if (action === 'transferred') {
-        if (!uploadedImage) {
+        if (!uploadedFile) {
           setNotification({
             open: true,
             message: 'Vui lòng tải lên ảnh chuyển khoản trước khi thanh toán.',
@@ -64,7 +66,7 @@ export default function WithdrawDialog({
           });
           return;
         }
-        await approveWithdraw(id, uploadedImage);
+        await approveWithdraw(id, uploadedFile);
       } else {
         await rejectWithdraw(id);
       }
@@ -195,6 +197,11 @@ export default function WithdrawDialog({
                                 return rest;
                               });
 
+                              setUploadedFiles((prev) => {
+                                const { [withdraw._id]: _, ...rest } = prev;
+                                return rest;
+                              });
+
                               if (inputRef.current) inputRef.current.value = '';
                             }}
                             sx={{
@@ -231,6 +238,13 @@ export default function WithdrawDialog({
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) {
+                        // Store the file object for API call
+                        setUploadedFiles((prev) => ({
+                          ...prev,
+                          [withdraw._id]: file,
+                        }));
+
+                        // Create preview URL for display
                         const reader = new FileReader();
                         reader.onloadend = () => {
                           setUploadedImages((prev) => ({
@@ -257,7 +271,7 @@ export default function WithdrawDialog({
                 />
                 <ActionButton
                   label="Thanh Toán"
-                  disabled={!uploadedImage}
+                  disabled={!uploadedFile}
                   color="primary"
                   onClick={() => {
                     void handleUpdateStatus(withdraw._id, 'transferred');
