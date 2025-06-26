@@ -143,7 +143,7 @@ export const useApproveWithdraw = () => {
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<UpdateWithdrawResponse | null>(null);
 
-  const approveWithdraw = async (id: string, image: string) => {
+  const approveWithdraw = async (id: string, imageFile: File) => {
     setLoading(true);
     setError(null);
 
@@ -151,15 +151,15 @@ export const useApproveWithdraw = () => {
       const token = localStorage.getItem('auth-token');
       if (!token) throw new Error('Authentication token not found');
 
+      const formData = new FormData();
+      formData.append('image', imageFile);
+
       const response = await axios.put<UpdateWithdrawResponse>(
         `${API_URL}/admin/withdraws/${id}/approve`,
-        {
-          image: image,
-        },
+        formData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
             Accept: 'application/json',
           },
         }
