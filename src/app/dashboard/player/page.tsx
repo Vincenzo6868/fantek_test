@@ -6,13 +6,13 @@ import Typography from '@mui/material/Typography';
 import { config } from '@/config';
 import { PlayerTable } from '@/components/dashboard/player/player-table';
 
-export const metadata = { title: `Quản Lý Người Chơi | Dashboard | ${config.site.name}` } satisfies Metadata;
+export const metadata = { title: `Quản Lý Cầu Thủ | Dashboard | ${config.site.name}` } satisfies Metadata;
 
 export default function Page(): React.JSX.Element {
   return (
     <Stack spacing={3}>
       <div>
-        <Typography variant="h4">Quản Lý Người Chơi</Typography>
+        <Typography variant="h4">Quản Lý Cầu Thủ</Typography>
       </div>
       <PlayerTable />
     </Stack>

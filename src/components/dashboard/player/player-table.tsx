@@ -54,10 +54,10 @@ export function PlayerTable(): React.JSX.Element {
 
       const message =
         action === 'accepted'
-          ? 'Người chơi đã được chấp nhận.'
+          ? 'Cầu thủ đã được chấp nhận.'
           : action === 'rejected'
-            ? 'Người chơi đã bị từ chối.'
-            : 'Người chơi trở về trạng thái chờ.';
+            ? 'Cầu thủ đã bị từ chối.'
+            : 'Cầu thủ trở về trạng thái chờ.';
 
       const severity: 'success' | 'error' | 'info' =
         action === 'accepted' ? 'success' : action === 'rejected' ? 'error' : 'info';
@@ -99,7 +99,7 @@ export function PlayerTable(): React.JSX.Element {
           <Table sx={{ minWidth: '800px' }}>
             <TableHead>
               <TableRow>
-                <TableCell>Tên Người Chơi</TableCell>
+                <TableCell>Tên Cầu Thủ</TableCell>
                 <TableCell>Câu Lạc Bộ</TableCell>
                 <TableCell>Số Điện Thoại</TableCell>
                 <TableCell>Email</TableCell>
