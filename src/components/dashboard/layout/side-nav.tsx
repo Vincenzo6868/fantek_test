@@ -57,7 +57,7 @@ export function SideNav(): React.JSX.Element {
         {renderNavItems({ pathname, items: navItems })}
       </Box>
       <Box component="nav" sx={{ p: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        v1.3.0
+        v1.4.0
       </Box>
     </Box>
   );
