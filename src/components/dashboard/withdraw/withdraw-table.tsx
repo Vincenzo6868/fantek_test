@@ -113,7 +113,7 @@ export function WithdrawTable(): React.JSX.Element {
               </TableRow>
             </TableHead>
             <TableBody>
-              {paginatedWithdraws.length === 0 ? (
+              {paginatedWithdraws?.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} sx={{ p: 0, border: 'none' }}>
                     <NoData
@@ -123,7 +123,7 @@ export function WithdrawTable(): React.JSX.Element {
                   </TableCell>
                 </TableRow>
               ) : (
-                paginatedWithdraws.map((row) => {
+                paginatedWithdraws?.map((row) => {
                   const status = statuses[row._id] ? statuses[row._id] : row.status;
 
                   return (
