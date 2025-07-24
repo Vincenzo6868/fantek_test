@@ -19,6 +19,8 @@ import { useGetKYCList } from '@/hooks/use-kyc';
 import Notification from '@/components/notification/notification';
 import KYCDialog from './kyc-popup';
 
+import { NoData } from './no-data';
+
 export interface DocInfo {
   name: string;
   dob: string;
@@ -112,7 +114,17 @@ export function KYCTable(): React.JSX.Element {
               </TableRow>
             </TableHead>
             <TableBody>
-              {paginatedKYCs.map((row) => {
+              {paginatedKYCs?.length === 0 && !loading ? (
+                <TableRow>
+                  <TableCell colSpan={5} sx={{ p: 0, border: 'none' }}>
+                    <NoData
+                      title="Không có yêu cầu KYC"
+                      description="Hiện tại không có yêu cầu xác thực danh tính nào để hiển thị. Các yêu cầu mới sẽ xuất hiện tại đây."
+                    />
+                  </TableCell>
+                </TableRow>
+              ) : (
+                paginatedKYCs?.map((row) => {
                 const status = statuses[row._id] ? statuses[row._id] : row.status;
 
                 return (
@@ -145,7 +157,8 @@ export function KYCTable(): React.JSX.Element {
                     </TableCell>
                   </TableRow>
                 );
-              })}
+              })
+              )}
             </TableBody>
           </Table>
         </Box>

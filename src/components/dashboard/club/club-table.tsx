@@ -21,6 +21,8 @@ import Typography from '@mui/material/Typography';
 import { useGetClub, useUpdateClubStatus } from '@/hooks/use-club';
 import Notification from '@/components/notification/notification';
 
+import { NoData } from './no-data';
+
 export interface Club {
   userId: string;
   displayName: string;
@@ -118,7 +120,17 @@ export function ClubTable(): React.JSX.Element {
               </TableRow>
             </TableHead>
             <TableBody>
-              {rows.map((row) => {
+              {rows?.length === 0 && !loading ? (
+                <TableRow>
+                  <TableCell colSpan={6} sx={{ p: 0, border: 'none' }}>
+                    <NoData
+                      title="Không có câu lạc bộ"
+                      description="Hiện tại không có câu lạc bộ nào để hiển thị. Các câu lạc bộ mới sẽ xuất hiện tại đây."
+                    />
+                  </TableCell>
+                </TableRow>
+              ) : (
+                rows?.map((row) => {
                 const status = statuses[row.userId] ?? row.onboardStatus;
                 const isDisabled = row.onboardStatus !== 'pending' || status !== 'pending';
                 return (
@@ -157,7 +169,8 @@ export function ClubTable(): React.JSX.Element {
                     </TableCell>
                   </TableRow>
                 );
-              })}
+              })
+              )}
             </TableBody>
           </Table>
         </Box>
